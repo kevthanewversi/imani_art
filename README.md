@@ -1,6 +1,9 @@
 # Artist Studio
 
 Portfolio site + shop + admin dashboard. One package, plug and play.
+
+
+
 <img width="1509" height="824" alt="Screenshot 2026-04-19 at 13 39 16" src="https://github.com/user-attachments/assets/5887b014-d094-4081-8a3f-798b01622648" />
 
 
