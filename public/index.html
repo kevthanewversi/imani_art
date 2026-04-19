@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imani — Original Paintings</title>
+<meta name="description" content="Original paintings by Imani">
+<meta property="og:title" content="Imani — Original Paintings">
+<meta property="og:site_name" content="Imani">
+<meta property="og:url" content="https://imani.art">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:   #F6F0E4;
+    --paper:   #EDE6D4;
+    --ink:     #1C1917;
+    --soft:    #44403C;
+    --muted:   #78716C;
+    --sienna:  #B45309;
+    --white:   #FDFAF4;
+    --border:  rgba(28,25,23,0.1);
+    --serif:   'Cormorant Garamond', Georgia, serif;
+    --sans:    'Outfit', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    font-weight: 300;
+    background: var(--cream);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    background: rgba(246,240,228,0.9);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s, padding 0.3s;
+  }
+  nav.solid { border-color: var(--border); padding: 1rem 4rem; }
+  .nav-logo { font-family: var(--serif); font-size: 1.4rem; font-weight: 300; }
+  .nav-logo em { font-style: italic; color: var(--sienna); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-size: 0.75rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); transition: color 0.2s; }
+  .nav-links a:hover { color: var(--sienna); }
+  .nav-right { display: flex; align-items: center; gap: 1.25rem; }
+  .cart-trigger {
+    position: relative; display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--soft); cursor: pointer;
+    border: 1px solid rgba(28,25,23,0.18); padding: 0.5rem 0.9rem;
+    background: transparent; transition: all 0.2s; font-family: var(--sans); font-weight: 400;
+  }
+  .cart-trigger:hover { border-color: var(--ink); color: var(--ink); }
+  .cart-trigger svg { flex-shrink: 0; }
+  .cart-count {
+    position: absolute; top: -7px; right: -7px;
+    background: var(--sienna); color: #fff;
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 0.62rem; font-weight: 500; letter-spacing: 0;
+    display: none; align-items: center; justify-content: center;
+    font-family: var(--sans);
+  }
+  .cart-count.visible { display: flex; }
+
+  /* ── CART DRAWER ── */
+  .cart-overlay {
+    position: fixed; inset: 0; background: rgba(28,25,23,0.45); z-index: 200;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+  .cart-drawer {
+    position: fixed; top: 0; right: 0; height: 100vh;
+    width: 440px; max-width: 100vw;
+    background: var(--cream); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; z-index: 201;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cart-overlay.open .cart-drawer { transform: translateX(0); }
+  .cart-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .cart-header-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 300; font-style: italic; }
+  .cart-header-title .count { font-family: var(--sans); font-size: 0.7rem; font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-left: 0.5rem; }
+  .cart-close {
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); background: transparent; cursor: pointer;
+    color: var(--muted); transition: all 0.15s;
+  }
+  .cart-close:hover { border-color: var(--ink); color: var(--ink); }
+  .cart-items { flex: 1; overflow-y: auto; padding: 1.25rem 2rem; }
+  .cart-item {
+    display: grid; grid-template-columns: 84px 1fr auto;
+    gap: 1rem; padding: 1.1rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item-img {
+    width: 84px; height: 110px; object-fit: cover;
+    display: block;
+  }
+  .cart-item-info { padding-top: 0.2rem; }
+  .cart-item-title { font-family: var(--serif); font-size: 1.05rem; font-style: italic; line-height: 1.25; margin-bottom: 0.25rem; }
+  .cart-item-meta { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.04em; line-height: 1.55; }
+  .cart-item-price { font-family: var(--serif); font-size: 1rem; margin-top: 0.5rem; }
+  .cart-item-remove {
+    background: transparent; border: none; cursor: pointer;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); transition: color 0.15s; padding: 0;
+    font-family: var(--sans);
+  }
+  .cart-item-remove:hover { color: var(--sienna); }
+  .cart-empty {
+    padding: 4rem 2rem; text-align: center; color: var(--muted);
+  }
+  .cart-empty-icon { opacity: 0.25; margin-bottom: 1rem; }
+  .cart-empty-title { font-family: var(--serif); font-size: 1.3rem; font-style: italic; color: var(--soft); margin-bottom: 0.5rem; }
+  .cart-empty-body { font-size: 0.85rem; line-height: 1.6; max-width: 240px; margin: 0 auto; }
+  .cart-footer {
+    padding: 1.5rem 2rem 2rem;
+    border-top: 1px solid var(--border);
+    background: var(--paper);
+  }
+  .cart-subtotal {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 0.3rem;
+  }
+  .cart-subtotal-label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); }
+  .cart-subtotal-value { font-family: var(--serif); font-size: 1.75rem; font-weight: 300; }
+  .cart-taxnote { font-size: 0.7rem; color: var(--muted); margin-bottom: 1.25rem; }
+  .cart-checkout {
+    width: 100%;
+    font-family: var(--sans); font-size: 0.78rem; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--white); background: var(--ink); border: 1px solid var(--ink);
+    padding: 1rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  }
+  .cart-checkout:hover:not(:disabled) { background: var(--sienna); border-color: var(--sienna); box-shadow: 0 0 10px rgba(180,83,9,0.55), 0 0 24px rgba(180,83,9,0.25); }
+  .cart-checkout:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cart-continue {
+    display: block; text-align: center; margin-top: 0.9rem;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); cursor: pointer; border: none; background: transparent; width: 100%;
+    font-family: var(--sans);
+  }
+  .cart-continue:hover { color: var(--ink); }
+
+  /* ── HERO SLIDESHOW ── */
+  #hero { position: relative; height: 100vh; overflow: hidden; }
+  .slideshow { position: absolute; inset: 0; }
+  .slide {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 1.8s ease;
+  }
+  .slide.active { opacity: 1; }
+  .slide img, .slide .slide-bg {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    animation: kenBurns 24s ease-in-out infinite alternate;
+    transform-origin: 50% 50%;
+  }
+  .slide:nth-child(2) img, .slide:nth-child(2) .slide-bg { animation-delay: -6s;  transform-origin: 70% 30%; }
+  .slide:nth-child(3) img, .slide:nth-child(3) .slide-bg { animation-delay: -12s; transform-origin: 30% 70%; }
+  .slide:nth-child(4) img, .slide:nth-child(4) .slide-bg { animation-delay: -18s; transform-origin: 60% 60%; }
+  .slide:nth-child(5) img, .slide:nth-child(5) .slide-bg { animation-delay: -4s;  transform-origin: 40% 20%; }
+  .slide:nth-child(6) img, .slide:nth-child(6) .slide-bg { animation-delay: -9s;  transform-origin: 75% 55%; }
+  @keyframes kenBurns {
+    from { transform: scale(1)    translate(0,    0); }
+    to   { transform: scale(1.12) translate(-1.5%, 1%); }
+  }
+  .slide-bg {
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 60%, #C2703A 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 70% 30%, #7C3D12 0%, transparent 55%),
+      radial-gradient(ellipse 80% 80% at 50% 50%, #E5B97A 0%, transparent 70%),
+      linear-gradient(160deg, #4A2810 0%, #8B4513 35%, #D4916A 65%, #E8C99A 100%);
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.8rem;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 100%);
+    text-align: center; padding: 2rem;
+  }
+  .hero-name {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: clamp(5rem, 14vw, 11rem);
+    color: #FDFAF4; line-height: 1; letter-spacing: 0.06em;
+    text-shadow: 0 2px 48px rgba(0,0,0,0.4); margin: 0;
+  }
+  .hero-name .letter {
+    display: inline-block;
+    opacity: 0;
+    animation: letterWrite 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+  @keyframes letterWrite {
+    0%   { opacity: 0; transform: translateY(20px) rotate(-5deg) scale(0.8);  filter: blur(5px); }
+    55%  { opacity: 1; transform: translateY(-5px) rotate(0.8deg) scale(1.04); filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0)    rotate(0deg)   scale(1);    filter: blur(0); }
+  }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .slide-caption {
+    position: absolute; bottom: 5.5rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--serif); font-style: italic; font-size: 0.82rem;
+    color: rgba(253,250,244,0.5); white-space: nowrap; pointer-events: none;
+    transition: opacity 1s; letter-spacing: 0.03em;
+  }
+  .hero-scroll {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 1rem;
+    color: rgba(253,250,244,0.5); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .scroll-line { width: 36px; height: 1px; background: rgba(253,250,244,0.4); }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    display: inline-block; padding: 0.9rem 2.2rem;
+    background: rgba(28,25,23,0.75); color: #FDFAF4;
+    font-family: var(--sans); font-size: 0.75rem; font-weight: 400;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid rgba(253,250,244,0.4); transition: all 0.25s; cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+  .btn-primary:hover {
+    background: transparent; color: #FDFAF4; border-color: var(--sienna);
+    box-shadow: 0 0 10px rgba(180,83,9,0.6), 0 0 26px rgba(180,83,9,0.3), 0 0 52px rgba(180,83,9,0.12);
+  }
+  .btn-ghost {
+    display: inline-block; padding: 0.9rem 2.2rem;
+    background: transparent; color: rgba(253,250,244,0.8);
+    font-family: var(--sans); font-size: 0.75rem; font-weight: 400;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid rgba(253,250,244,0.3); transition: all 0.25s; cursor: pointer;
+  }
+  .btn-ghost:hover {
+    color: #FDFAF4; border-color: var(--sienna);
+    box-shadow: 0 0 10px rgba(180,83,9,0.6), 0 0 26px rgba(180,83,9,0.3), 0 0 52px rgba(180,83,9,0.12);
+  }
+  /* btn-primary on light backgrounds (About section etc.) */
+  #about .btn-primary, #contact .btn-primary {
+    background: var(--ink); color: var(--white);
+    border-color: var(--ink); backdrop-filter: none;
+  }
+  #about .btn-primary:hover, #contact .btn-primary:hover {
+    background: transparent; color: var(--ink); border-color: var(--sienna);
+    box-shadow: 0 0 10px rgba(180,83,9,0.5), 0 0 24px rgba(180,83,9,0.25), 0 0 48px rgba(180,83,9,0.1);
+  }
+
+  /* ── SECTIONS ── */
+  .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 3.5rem; }
+  .section-eyebrow { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sienna); display: block; margin-bottom: 0.5rem; }
+  .section-title { font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 300; line-height: 1.1; }
+  .section-title em { font-style: italic; }
+  .section-link { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); border-bottom: 1px solid currentColor; padding-bottom: 2px; transition: color 0.2s; white-space: nowrap; }
+  .section-link:hover { color: var(--sienna); }
+
+  /* ── GALLERY ── */
+  #gallery { padding: 7rem 4rem; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.2rem; align-items: start; }
+  .gallery-item { overflow: hidden; cursor: pointer; }
+  .gallery-item:nth-child(1) { grid-column: span 5; }
+  .gallery-item:nth-child(2) { grid-column: span 4; margin-top: 5rem; }
+  .gallery-item:nth-child(3) { grid-column: span 3; margin-top: 1rem; }
+  .gallery-item:nth-child(4) { grid-column: span 3; margin-top: -2rem; }
+  .gallery-item:nth-child(5) { grid-column: span 5; margin-top: -3rem; }
+  .gallery-item:nth-child(6) { grid-column: span 4; margin-top: 2rem; }
+  .gallery-item:nth-child(7), .gallery-item:nth-child(8) { grid-column: span 4; }
+  .gallery-item:nth-child(n+7) { display: none; }
+  .gallery-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94); }
+  .gallery-item:nth-child(1) .gallery-img { aspect-ratio: 4/5; }
+  .gallery-item:nth-child(3) .gallery-img, .gallery-item:nth-child(4) .gallery-img { aspect-ratio: 1; }
+  .gallery-item:hover .gallery-img { transform: scale(1.03); }
+  .gallery-info { padding: 0.75rem 0 0; opacity: 0; transform: translateY(5px); transition: all 0.3s; }
+  .gallery-item:hover .gallery-info { opacity: 1; transform: translateY(0); }
+  .gallery-name { font-family: var(--serif); font-size: 1rem; font-style: italic; }
+  .gallery-meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; margin-top: 0.15rem; }
+
+  /* placeholder gradients */
+  .ph0 { background: radial-gradient(ellipse at 35% 55%, #C2703A 0%, #7C3D12 45%, #1C0D05 100%); }
+  .ph1 { background: radial-gradient(ellipse at 60% 40%, #4A7C59 0%, #1A3D2A 50%, #0D2419 100%); }
+  .ph2 { background: linear-gradient(135deg, #2C3E6B 0%, #1A2547 50%, #4A5E8A 100%); }
+  .ph3 { background: radial-gradient(ellipse at 50% 70%, #C4A265 0%, #8B6914 50%, #5A4209 100%); }
+  .ph4 { background: linear-gradient(170deg, #7B2D3E 0%, #3D1520 40%, #9B4A5A 70%, #C97080 100%); }
+  .ph5 { background: radial-gradient(ellipse at 30% 40%, #4A3B6B 0%, #1E1535 60%, #6B5A8A 100%); }
+
+  /* ── SHOP ── */
+  #shop { padding: 7rem 4rem; background: var(--paper); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 3rem 2rem; }
+  .product-card { display: flex; flex-direction: column; }
+  .product-img-wrap { width: 100%; aspect-ratio: 3/4; overflow: hidden; position: relative; margin-bottom: 1.2rem; cursor: pointer; }
+  .product-img-wrap img, .product-img-wrap .ph-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
+  .product-card:hover .product-img-wrap img,
+  .product-card:hover .product-img-wrap .ph-img { transform: scale(1.04); }
+  .product-badge { position: absolute; top: 0.8rem; left: 0.8rem; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; }
+  .badge-new  { background: var(--sienna); color: #fff; }
+  .badge-sold { background: var(--ink); color: var(--white); }
+  .product-title { font-family: var(--serif); font-size: 1.25rem; font-style: italic; margin-bottom: 0.25rem; }
+  .product-dims  { font-size: 0.72rem; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.9rem; }
+  .product-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.9rem; border-top: 1px solid var(--border); margin-top: auto; }
+  .product-price { font-family: var(--serif); font-size: 1.15rem; font-weight: 300; }
+  .product-price.sold { text-decoration: line-through; color: var(--muted); }
+  .buy-btn { font-family: var(--sans); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.55rem 1.1rem; background: var(--ink); color: var(--white); border: 1px solid var(--ink); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .buy-btn:hover { background: transparent; color: var(--ink); border-color: var(--sienna); box-shadow: 0 0 8px rgba(180,83,9,0.55), 0 0 20px rgba(180,83,9,0.25); }
+  .buy-btn.enquire { background: transparent; color: var(--soft); border-color: rgba(28,25,23,0.2); }
+  .buy-btn.enquire:hover { border-color: var(--sienna); color: var(--ink); box-shadow: 0 0 8px rgba(180,83,9,0.55), 0 0 20px rgba(180,83,9,0.25); }
+  .buy-btn.sold-label { background: transparent; color: var(--muted); border-color: transparent; cursor: default; font-style: italic; }
+  .buy-btn.in-cart { background: var(--sienna); border-color: var(--sienna); color: #fff; cursor: default; }
+  .buy-btn.added { background: #166534; border-color: #166534; color: #fff; }
+  .shop-empty { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--muted); }
+  .shop-empty p { font-family: var(--serif); font-size: 1.2rem; font-style: italic; }
+
+  /* ── QUOTE ── */
+  #quote { padding: 7rem 4rem; text-align: center; background: var(--ink); position: relative; overflow: hidden; }
+  #quote::before { content: '"'; position: absolute; top: -2rem; left: 50%; transform: translateX(-50%); font-family: var(--serif); font-size: 20rem; line-height: 1; color: rgba(255,255,255,0.03); user-select: none; }
+  .quote-text { font-family: var(--serif); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 300; font-style: italic; color: var(--white); line-height: 1.35; max-width: 680px; margin: 0 auto 1.5rem; }
+  .quote-attr { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(246,240,228,0.4); }
+
+  /* ── ABOUT ── */
+  #about { padding: 8rem 4rem; display: grid; grid-template-columns: 5fr 7fr; gap: 6rem; align-items: center; }
+  .about-img-wrap { position: relative; }
+  .about-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; }
+  .about-img.ph { background: radial-gradient(ellipse 70% 80% at 40% 50%, #5C3D1E 0%, #2A1A0A 60%, #1A0D05 100%); }
+  .about-accent { position: absolute; top: -1.5rem; right: -1.5rem; width: 58%; aspect-ratio: 1; border: 2px solid var(--sienna); z-index: -1; }
+  .about-intro { font-family: var(--serif); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 300; font-style: italic; line-height: 1.35; margin-bottom: 1.75rem; }
+  .about-body { font-size: 1rem; line-height: 1.85; color: var(--soft); margin-bottom: 1.25rem; white-space: pre-line; }
+  .about-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 2.5rem; margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
+  .fact-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+  .fact-value { font-family: var(--serif); font-size: 1rem; }
+
+  /* ── EXHIBITIONS ── */
+  #exhibitions { padding: 7rem 4rem; }
+  .exh-list { border-top: 1px solid var(--border); }
+  .exh-row { display: grid; grid-template-columns: 10ch 1fr auto; gap: 2rem; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid rgba(28,25,23,0.07); transition: background 0.15s; }
+  .exh-row:hover { background: rgba(180,83,9,0.03); }
+  .exh-year { font-family: var(--serif); font-style: italic; color: var(--sienna); font-size: 1rem; }
+  .exh-name { font-family: var(--serif); font-size: 1.1rem; }
+  .exh-venue { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+  .exh-badge { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.22rem 0.6rem; border: 1px solid var(--sienna); color: var(--sienna); white-space: nowrap; }
+
+  /* ── CONTACT ── */
+  #contact { padding: 7rem 4rem; background: var(--paper); display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; }
+  .contact-body { font-size: 1rem; line-height: 1.8; color: var(--soft); margin: 1.5rem 0 2.5rem; }
+  .contact-item { margin-top: 1rem; }
+  .contact-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .contact-value { font-family: var(--serif); font-size: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.2rem; }
+  .form-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .form-input { font-family: var(--sans); font-size: 0.9rem; color: var(--ink); background: transparent; border: none; border-bottom: 1px solid rgba(28,25,23,0.2); padding: 0.5rem 0; outline: none; transition: border-color 0.2s; }
+  .form-input:focus { border-color: var(--sienna); }
+  .form-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .form-submit { margin-top: 0.5rem; font-family: var(--sans); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); background: var(--ink); border: 1px solid var(--ink); padding: 0.9rem 2.4rem; cursor: pointer; transition: all 0.2s; }
+  .form-submit:hover { background: transparent; color: var(--ink); border-color: var(--sienna); box-shadow: 0 0 10px rgba(180,83,9,0.5), 0 0 24px rgba(180,83,9,0.25); }
+
+  /* ── FOOTER ── */
+  footer { padding: 2.5rem 4rem; display: flex; justify-content: space-between; align-items: center; gap: 2rem; border-top: 1px solid var(--border); }
+  .footer-copy { font-size: 0.72rem; color: var(--muted); }
+  .footer-social { display: flex; gap: 0.4rem; align-items: center; }
+  .footer-social a {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); border-radius: 50%;
+    transition: all 0.2s; text-decoration: none;
+  }
+  .footer-social a:hover { color: var(--sienna); background: rgba(180,83,9,0.08); }
+  .footer-links { display: flex; gap: 2rem; list-style: none; }
+  .footer-links a { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+  .footer-links a:hover { color: var(--sienna); }
+
+  /* ── REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+  .reveal-d1 { transition-delay: 0.1s; }
+  .reveal-d2 { transition-delay: 0.22s; }
+  .reveal-d3 { transition-delay: 0.34s; }
+
+  /* ── MOBILE ── */
+  @media(max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    nav.solid { padding: 0.8rem 1.5rem; }
+    .nav-links, .nav-cta { display: none; }
+    #hero { height: 100vh; }
+    .hero-name { font-size: clamp(3.8rem, 20vw, 6rem); }
+    .hero-actions { flex-direction: column; align-items: center; }
+    #gallery, #shop, #about, #exhibitions, #contact, #quote { padding: 5rem 1.75rem; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .gallery-item { grid-column: span 1 !important; margin: 0 !important; }
+    .gallery-item:nth-child(n+7) { display: block; }
+    #about { grid-template-columns: 1fr; gap: 3rem; }
+    #contact { grid-template-columns: 1fr; gap: 3rem; }
+    footer { flex-direction: column; gap: 1.5rem; padding: 2rem 1.75rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo" id="nav-logo">I<em>mani</em></a>
+  <ul class="nav-links">
+    <li><a href="#gallery">Works</a></li>
+    <li><a href="#shop">Shop</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-trigger" onclick="openCart()" aria-label="Open cart">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <span>Cart</span>
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCartOnBg(event)">
+  <aside class="cart-drawer" role="dialog" aria-label="Shopping cart">
+    <div class="cart-header">
+      <span class="cart-header-title">Cart<span class="count" id="cart-header-count"></span></span>
+      <button class="cart-close" onclick="closeCart()" aria-label="Close cart">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="cart-items" id="cart-items"><!-- populated by JS --></div>
+    <div class="cart-footer" id="cart-footer" style="display:none">
+      <div class="cart-subtotal">
+        <span class="cart-subtotal-label">Subtotal</span>
+        <span class="cart-subtotal-value" id="cart-subtotal">£0</span>
+      </div>
+      <p class="cart-taxnote">Shipping and taxes calculated at checkout.</p>
+      <button class="cart-checkout" id="cart-checkout-btn" onclick="checkout()">
+        <span id="checkout-label">Checkout Securely</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <button class="cart-continue" onclick="closeCart()">Continue Browsing</button>
+    </div>
+  </aside>
+</div>
+
+<!-- HERO SLIDESHOW -->
+<section id="hero">
+  <div class="slideshow" id="slideshow"><!-- populated by JS --></div>
+  <div class="hero-overlay">
+    <h1 class="hero-name" id="hero-name" aria-label="Imani"></h1>
+    <div class="hero-actions">
+      <a href="#shop" class="btn-primary">Shop Originals</a>
+      <a href="#gallery" class="btn-ghost">View Gallery</a>
+    </div>
+  </div>
+  <div class="slide-caption" id="slide-caption"></div>
+  <div class="hero-scroll">
+    <span class="scroll-line"></span>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-header reveal">
+    <div>
+      <span class="section-eyebrow">Selected Works</span>
+      <h2 class="section-title">Recent <em>paintings</em></h2>
+    </div>
+  </div>
+  <div class="gallery-grid" id="gallery-grid">
+    <!-- populated by JS -->
+  </div>
+</section>
+
+<!-- SHOP -->
+<section id="shop">
+  <div class="section-header reveal">
+    <div>
+      <span class="section-eyebrow">Available Works</span>
+      <h2 class="section-title">Shop <em>originals</em></h2>
+    </div>
+  </div>
+  <div class="shop-grid" id="shop-grid">
+    <!-- populated by JS -->
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <p class="quote-text reveal">Painting is the silence between what you see and what you feel.</p>
+  <span class="quote-attr reveal reveal-d1">— Artist's Statement</span>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-img-wrap reveal">
+    <div class="about-img ph" id="about-img"></div>
+    <div class="about-accent"></div>
+  </div>
+  <div>
+    <span class="section-eyebrow">About the Artist</span>
+    <p class="about-intro reveal" id="about-intro"></p>
+    <p class="about-body reveal" id="about-body"></p>
+    <div class="about-facts reveal">
+      <div><div class="fact-label">Based</div><div class="fact-value" id="fact-location"></div></div>
+      <div><div class="fact-label">Medium</div><div class="fact-value" id="fact-medium"></div></div>
+      <div><div class="fact-label">Originals sold</div><div class="fact-value" id="fact-sold"></div></div>
+      <div><div class="fact-label">Commissions</div><div class="fact-value" id="fact-commissions"></div></div>
+    </div>
+    <div style="margin-top:2.5rem" class="reveal">
+      <a href="#contact" class="btn-primary">Enquire About Commissions</a>
+    </div>
+  </div>
+</section>
+
+<!-- EXHIBITIONS (static — edit in admin or hardcode) -->
+<section id="exhibitions">
+  <div class="section-header reveal">
+    <div>
+      <span class="section-eyebrow">Exhibitions</span>
+      <h2 class="section-title">Shows &amp; <em>appearances</em></h2>
+    </div>
+  </div>
+  <div class="exh-list">
+    <div class="exh-row reveal"><span class="exh-year">2025</span><div><div class="exh-name">Luminous Matter — Solo Exhibition</div><div class="exh-venue">Tate Exchange Pop-up, London</div></div><span class="exh-badge">Upcoming</span></div>
+    <div class="exh-row reveal"><span class="exh-year">2024</span><div><div class="exh-name">New Voices in British Painting</div><div class="exh-venue">Saatchi Gallery, London</div></div><span></span></div>
+    <div class="exh-row reveal"><span class="exh-year">2024</span><div><div class="exh-name">Open Studios — Southwark</div><div class="exh-venue">Bermondsey Artist Studios</div></div><span></span></div>
+    <div class="exh-row reveal"><span class="exh-year">2023</span><div><div class="exh-name">The Contemporary Landscape</div><div class="exh-venue">Flowers Gallery, London &amp; New York</div></div><span></span></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div>
+    <span class="section-eyebrow">Get in Touch</span>
+    <h2 class="section-title reveal">Let's talk about<br><em>your space.</em></h2>
+    <p class="contact-body reveal">Whether you're interested in a specific painting, a commission, or simply want to know more — I'd love to hear from you.</p>
+    <div class="reveal">
+      <div class="contact-item"><div class="contact-label">Email</div><div class="contact-value" id="contact-email"></div></div>
+      <div class="contact-item" style="margin-top:1rem"><div class="contact-label">Instagram</div><div class="contact-value"><a id="contact-ig" target="_blank"></a></div></div>
+      <div class="contact-item" style="margin-top:1rem"><div class="contact-label">Shipping</div><div class="contact-value" id="contact-shipping"></div></div>
+    </div>
+  </div>
+  <form id="contact-form" class="reveal">
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" type="text" name="name" required></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" name="email" required></div>
+    <div class="form-group"><label class="form-label">Subject</label><input class="form-input" type="text" name="subject" placeholder="Commission, artwork enquiry…"></div>
+    <div class="form-group"><label class="form-label">Message</label><textarea class="form-input form-textarea" name="message" required></textarea></div>
+    <button class="form-submit" type="submit" id="form-submit-btn">Send Message</button>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-copy" id="footer-copy"></p>
+  <div class="footer-social">
+    <a id="social-ig" href="#" target="_blank" rel="noopener" aria-label="Instagram">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+    </a>
+    <a id="social-tt" href="#" target="_blank" rel="noopener" aria-label="TikTok">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+      </svg>
+    </a>
+    <a id="social-pin" href="#" target="_blank" rel="noopener" aria-label="Pinterest">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M10 8h4a3 3 0 0 1 0 6h-3"/>
+        <path d="M11 8v12"/>
+      </svg>
+    </a>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Shipping &amp; Returns</a></li>
+  </ul>
+</footer>
+
+<script>
+// ── placeholder data shown until real paintings are added ──
+const PLACEHOLDERS = [
+  { id:'p1', title:'A Bigger Splash',       medium:'Acrylic on canvas',  dimensions:'242 × 244 cm', year:'1967', price:2800, status:'live', image_url:'/paintings/hockney-bigger-splash.png',                                       ph:'ph0', shopify_url:null, shopify_variant_id:null },
+  { id:'p2', title:'Water Lilies',          medium:'Oil on canvas',      dimensions:'160 × 180 cm', year:'1906', price:1650, status:'live', image_url:'/paintings/monet-water-lilies.jpeg',                                                                              ph:'ph1', shopify_url:null, shopify_variant_id:null },
+  { id:'p3', title:'Subway Entrance',        medium:'Oil on canvas',      dimensions:'86 × 117 cm',  year:'1938', price:780,  status:'sold', image_url:'/paintings/rothko-subway-entrance.png',                                                                          ph:'ph2', shopify_url:null, shopify_variant_id:null },
+  { id:'p4', title:'Spring Walk in Dresden', medium:'Oil on canvas',     dimensions:'70 × 90 cm',   year:'1912', price:980,  status:'live', image_url:'/paintings/spring-walk-dresden.png',                                                                                     ph:'ph3', shopify_url:null, shopify_variant_id:null },
+  { id:'p5', title:'Two Women',             medium:'Oil on canvas',      dimensions:'65 × 50 cm',   year:'1895', price:2200, status:'live', image_url:'/paintings/pietschmann-two-women.png',                                                                                   ph:'ph4', shopify_url:null, shopify_variant_id:null },
+  { id:'p6', title:"Portrait of Olga in d'Hermine Fur", medium:'Oil on canvas', dimensions:'130 × 97 cm', year:'1923', price:1200, status:'live', image_url:'/paintings/picasso-portrait-olga.png',                                                                            ph:'ph5', shopify_url:null, shopify_variant_id:null },
+];
+const PH_SETTINGS = {
+  studio_name:'Imani', artist_name:'Imani',
+  hero_subtitle:'Each piece is a singular conversation between light, texture, and time — painted in my studio and shipped worldwide, ready to hang.',
+  bio_intro:'A painter working at the intersection of memory, light, and landscape.',
+  bio_body:'I work primarily in oil and acrylic, drawn to the way light transforms the familiar into something profound.\n\nI exhibit internationally and accept a small number of commissions each year.',
+  location:'London, UK', medium_primary:'Oil & Acrylic',
+  originals_sold:'140+', commissions:'Open for 2025',
+  email:'hello@imani.art',
+  instagram:'@imani', instagram_url:'https://instagram.com/imani',
+  tiktok:'@imani',    tiktok_url:'https://tiktok.com/@imani',
+  pinterest:'imani',  pinterest_url:'https://pinterest.com/imani',
+  shipping_info:'Free UK & Europe · Worldwide available',
+};
+
+// ── CART state ─────────────────────────────────────────────
+const CART_KEY = 'studio_cart_v1';
+let cart = loadCart();
+let shopInfo = { shopify_configured: false, shopify_domain: null };
+let livePaintings = []; // cached list of paintings currently on sale
+
+function loadCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+  catch { return []; }
+}
+function saveCart() { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+
+function addToCart(painting) {
+  if (!painting.shopify_variant_id) return;        // safety
+  if (cart.find(i => i.id === painting.id)) return; // already in cart (originals are 1-of-1)
+  cart.push({
+    id:   painting.id,
+    variant_id: painting.shopify_variant_id,
+    title: painting.title,
+    medium: painting.medium,
+    dimensions: painting.dimensions,
+    price: parseFloat(painting.price),
+    image_url: painting.image_url,
+    ph: painting.ph,
+  });
+  saveCart();
+  updateCartUI();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+  updateCartUI();
+  renderShop(livePaintings);  // re-render so Add to Cart becomes available again
+}
+
+function cartHas(paintingId) { return cart.some(i => i.id === paintingId); }
+function cartSubtotal() { return cart.reduce((s, i) => s + i.price, 0); }
+
+// ── CART UI ────────────────────────────────────────────────
+function openCart()  { document.getElementById('cart-overlay').classList.add('open');  document.body.style.overflow = 'hidden'; }
+function closeCart() { document.getElementById('cart-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+function closeCartOnBg(e) { if (e.target.id === 'cart-overlay') closeCart(); }
+
+function updateCartUI() {
+  const count = cart.length;
+  const countEl = document.getElementById('cart-count');
+  const headerCountEl = document.getElementById('cart-header-count');
+  countEl.textContent = count;
+  countEl.classList.toggle('visible', count > 0);
+  headerCountEl.textContent = count ? ` · ${count} item${count > 1 ? 's' : ''}` : '';
+
+  const itemsEl  = document.getElementById('cart-items');
+  const footerEl = document.getElementById('cart-footer');
+
+  if (!count) {
+    itemsEl.innerHTML = `
+      <div class="cart-empty">
+        <svg class="cart-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <p class="cart-empty-title">Your cart is empty</p>
+        <p class="cart-empty-body">Explore the shop and add pieces to your collection.</p>
+      </div>`;
+    footerEl.style.display = 'none';
+    return;
+  }
+
+  itemsEl.innerHTML = cart.map(item => {
+    const img = item.image_url
+      ? `<img class="cart-item-img" src="${item.image_url}" alt="${item.title}">`
+      : `<div class="cart-item-img ${item.ph || 'ph0'}"></div>`;
+    return `
+      <div class="cart-item">
+        ${img}
+        <div class="cart-item-info">
+          <div class="cart-item-title">${item.title}</div>
+          <div class="cart-item-meta">${[item.medium, item.dimensions].filter(Boolean).join(' · ')}</div>
+          <div class="cart-item-price">£${item.price.toLocaleString()}</div>
+        </div>
+        <button class="cart-item-remove" onclick="removeFromCart(${item.id})">Remove</button>
+      </div>`;
+  }).join('');
+
+  document.getElementById('cart-subtotal').textContent = `£${cartSubtotal().toLocaleString()}`;
+  footerEl.style.display = 'block';
+
+  // Disable checkout if Shopify isn't configured
+  const btn = document.getElementById('cart-checkout-btn');
+  const lbl = document.getElementById('checkout-label');
+  if (!shopInfo.shopify_configured) {
+    btn.disabled = true;
+    lbl.textContent = 'Checkout not available';
+  } else {
+    btn.disabled = false;
+    lbl.textContent = 'Checkout Securely';
+  }
+}
+
+// ── CHECKOUT ───────────────────────────────────────────────
+function checkout() {
+  if (!shopInfo.shopify_configured || !shopInfo.shopify_domain) {
+    alert("Checkout isn't set up yet. Please use the Enquire button or email directly.");
+    return;
+  }
+  if (!cart.length) return;
+
+  // Shopify cart permalink: /cart/{variant_id}:{qty},{variant_id}:{qty}
+  // Shopify's hosted checkout takes it from here — PCI, cards, Apple Pay, the lot.
+  const items = cart.map(i => `${i.variant_id}:1`).join(',');
+  window.location.href = `https://${shopInfo.shopify_domain}/cart/${items}`;
+}
+
+// ── Sync cart with current paintings (remove any that got sold / deleted) ──
+function reconcileCart(livePaintings) {
+  const validIds = new Set(livePaintings.filter(p => p.shopify_variant_id && p.status === 'live').map(p => p.id));
+  const before = cart.length;
+  cart = cart.filter(item => validIds.has(item.id));
+  if (cart.length !== before) {
+    saveCart();
+    updateCartUI();
+  }
+}
+
+// ── BOOT ───────────────────────────────────────────────────
+async function init() {
+  const [settingsData, portfolioData, shopData, shopInfoData] = await Promise.allSettled([
+    fetch('/api/settings').then(r => r.json()),
+    fetch('/api/paintings?status=portfolio&limit=6').then(r => r.json()),
+    fetch('/api/paintings?status=shop&limit=12').then(r => r.json()),
+    fetch('/api/shop-info').then(r => r.json()),
+  ]);
+
+  const s = settingsData.status === 'fulfilled' ? settingsData.value : PH_SETTINGS;
+  const portfolioPaintings = portfolioData.status === 'fulfilled' && portfolioData.value.paintings?.length
+    ? portfolioData.value.paintings : PLACEHOLDERS;
+  const shopPaintings = shopData.status === 'fulfilled' && shopData.value.paintings?.length
+    ? shopData.value.paintings : PLACEHOLDERS.filter(p => p.status === 'live');
+
+  if (shopInfoData.status === 'fulfilled') shopInfo = shopInfoData.value;
+
+  livePaintings = shopPaintings;
+  reconcileCart(shopPaintings);
+
+  applySettings(s);
+  renderGallery(portfolioPaintings);
+  renderShop(shopPaintings);
+  updateCartUI();
+  initReveal();
+}
+
+function applySettings(s) {
+  document.title = `${s.studio_name} — Original Paintings`;
+  const logo = document.getElementById('nav-logo');
+  if (logo) logo.innerHTML = s.studio_name?.slice(0,1) + '<em>' + s.studio_name?.slice(1) + '</em>';
+  animateName(s.studio_name || 'Imani');
+  setText('about-intro', s.bio_intro);
+  setText('about-body', s.bio_body);
+  setText('fact-location', s.location);
+  setText('fact-medium', s.medium_primary);
+  setText('fact-sold', s.originals_sold);
+  setText('fact-commissions', s.commissions);
+  setText('contact-shipping', s.shipping_info);
+  setText('footer-copy', `© ${new Date().getFullYear()} ${s.artist_name} · All original works protected`);
+  const emailEl = document.getElementById('contact-email');
+  if (emailEl) emailEl.textContent = s.email;
+  const igEl = document.getElementById('contact-ig');
+  if (igEl) { igEl.textContent = s.instagram; igEl.href = s.instagram_url; }
+
+  // Footer socials
+  const socials = [['social-ig', s.instagram_url], ['social-tt', s.tiktok_url], ['social-pin', s.pinterest_url]];
+  socials.forEach(([id, url]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (url) { el.href = url; el.style.display = ''; }
+    else     { el.style.display = 'none'; }  // hide if not configured
+  });
+
+  // wire contact form mailto
+  document.getElementById('contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    const btn = document.getElementById('form-submit-btn');
+    // Try a simple fetch to a mail endpoint if you add one, otherwise mailto fallback
+    window.location.href = `mailto:${s.email}?subject=${encodeURIComponent(data.subject||'Enquiry')}&body=${encodeURIComponent(`${data.name}\n${data.email}\n\n${data.message}`)}`;
+    btn.textContent = 'Opening your mail app…';
+    setTimeout(() => btn.textContent = 'Send Message', 3000);
+  });
+}
+
+function renderGallery(paintings) {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = paintings.slice(0,6).map((p, i) => {
+    const img = p.image_url
+      ? `<img class="gallery-img" src="${p.image_url}" alt="${p.title}" loading="lazy">`
+      : `<div class="gallery-img ${p.ph || 'ph'+i}"></div>`;
+    return `
+      <div class="gallery-item reveal${i<3?' reveal-d'+i:''}">
+        ${img}
+        <div class="gallery-info">
+          <div class="gallery-name">${p.title}</div>
+          <div class="gallery-meta">${[p.medium, p.dimensions, p.year].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  initSlideshow(paintings);
+}
+
+// ── SLIDESHOW ──────────────────────────────────────────────
+function initSlideshow(paintings) {
+  const container = document.getElementById('slideshow');
+  if (!container || !paintings.length) return;
+
+  container.innerHTML = paintings.slice(0, 6).map((p, i) => {
+    const inner = p.image_url
+      ? `<img src="${p.image_url}" alt="${p.title || ''}" loading="eager">`
+      : `<div class="slide-bg ${p.ph || 'ph' + i}"></div>`;
+    return `<div class="slide${i === 0 ? ' active' : ''}" data-title="${p.title || ''}" data-medium="${p.medium || ''}">${inner}</div>`;
+  }).join('');
+
+  const captionEl = document.getElementById('slide-caption');
+  const slideEls  = [...container.querySelectorAll('.slide')];
+  let current = 0;
+
+  function setCaption(idx) {
+    if (!captionEl) return;
+    const s = slideEls[idx];
+    const parts = [s.dataset.title, s.dataset.medium].filter(Boolean);
+    captionEl.textContent = parts.join(' · ');
+  }
+
+  function advance() {
+    slideEls[current].classList.remove('active');
+    current = (current + 1) % slideEls.length;
+    slideEls[current].classList.add('active');
+    setCaption(current);
+  }
+
+  setCaption(0);
+  if (slideEls.length > 1) setInterval(advance, 5500);
+}
+
+// ── LETTER-BY-LETTER NAME ──────────────────────────────────
+function animateName(name) {
+  const el = document.getElementById('hero-name');
+  if (!el || !name) return;
+  el.innerHTML = '';
+  [...name].forEach((char, i) => {
+    const span = document.createElement('span');
+    span.className = 'letter';
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    span.style.animationDelay = `${0.5 + i * 0.18}s`;
+    el.appendChild(span);
+  });
+}
+
+function renderShop(paintings) {
+  livePaintings = paintings;
+  const grid = document.getElementById('shop-grid');
+  if (!paintings.length) {
+    grid.innerHTML = '<div class="shop-empty"><p>New works coming soon.</p></div>';
+    return;
+  }
+  grid.innerHTML = paintings.map((p, i) => {
+    const img = p.image_url
+      ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">`
+      : `<div class="ph-img ${p.ph || 'ph'+i}"></div>`;
+    const badge = p.status === 'sold'
+      ? '<span class="product-badge badge-sold">Sold</span>'
+      : i === 0 ? '<span class="product-badge badge-new">New</span>' : '';
+    const priceClass = p.status === 'sold' ? 'product-price sold' : 'product-price';
+
+    let action;
+    if (p.status === 'sold') {
+      action = '<span class="buy-btn sold-label">Sold</span>';
+    } else if (p.shopify_variant_id && shopInfo.shopify_configured) {
+      // Real Shopify-backed product — use the cart
+      if (cartHas(p.id)) {
+        action = `<button class="buy-btn in-cart" onclick="openCart()">In Cart ✓</button>`;
+      } else {
+        action = `<button class="buy-btn" data-painting-id="${p.id}" onclick='addPaintingToCart(${JSON.stringify(p).replace(/'/g, "&apos;")}, this)'>Add to Cart</button>`;
+      }
+    } else {
+      // No Shopify — fall back to enquire
+      action = `<a class="buy-btn enquire" href="#contact">Enquire →</a>`;
+    }
+
+    return `
+      <div class="product-card reveal${i < 3 ? ' reveal-d'+i : ''}">
+        <div class="product-img-wrap">${img}${badge}</div>
+        <h3 class="product-title">${p.title}</h3>
+        <p class="product-dims">${[p.medium, p.dimensions].filter(Boolean).join(' · ')} · Unframed</p>
+        <div class="product-footer">
+          <span class="${priceClass}">£${Number(p.price).toLocaleString()}</span>
+          ${action}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Called from the onclick handlers — wraps addToCart with a brief "Added!" flourish
+function addPaintingToCart(painting, btn) {
+  addToCart(painting);
+  btn.classList.add('added');
+  btn.textContent = 'Added ✓';
+  setTimeout(() => {
+    // re-render the shop so the button turns into "In Cart"
+    renderShop(livePaintings);
+  }, 650);
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el && val) el.textContent = val;
+}
+
+function initReveal() {
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('solid', window.scrollY > 60);
+});
+
+init();
+</script>
+</body>
+</html>
